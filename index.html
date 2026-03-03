@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>圓形時鐘與閱歷</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #fff;
+        }
+        .clock {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 50px auto;
+            border: 8px solid #fff;
+            border-radius: 50%;
+            background: #111;
+        }
+        .hand {
+            position: absolute;
+            width: 50%;
+            height: 2px;
+            background: #333;
+            top: 50%;
+            left: 50%;
+            transform-origin: 0% 50%;
+            transform: rotate(90deg);
+            transition: transform 0.05s linear; /* smooth motion */
+        }
+        .hand.hour, .hand.second {
+            background: #fff; /* make hour and second hands white */
+        }
+        .hand.hour {
+            width: 35%;
+            height: 4px;
+        }
+        .center-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #fff;
+            border-radius: 50%;
+            top: calc(50% - 4px);
+            left: calc(50% - 4px);
+        }
+        .clock .number {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #fff;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #experience {
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: left;
+        }
+        #experience h2 {
+            margin-top: 0;
+        }
+        /* calendar styles */
+        #calendar-container {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            text-align: center;
+            max-width: 400px;
+            margin: 0 auto;
+            font-size: 14px;
+        }
+        #calendar-container div {
+            padding: 8px;
+            background: white;
+            border: 1px solid #ddd;
+            font-size: 18px; /* make numbers larger */
+            font-weight: bold; /* increase contrast */
+            color: black; /* darker text for readability */
+        }
+        #calendar-container .header {
+            font-weight: bold;
+            background: #eee;
+            font-size: 16px; /* headers slightly smaller than dates */
+        }
+        #calendar-container .today {
+            background: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <div class="clock" id="clock">
+        <div class="hand hour" id="hour"></div>
+        <div class="hand minute" id="minute"></div>
+        <div class="hand second" id="second"></div>
+        <div class="center-dot"></div>
+    </div>
+
+    <section id="calendar">
+        <h2>月曆</h2>
+        <div id="calendar-container"></div>
+    </section>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const sec = now.getSeconds();
+            const min = now.getMinutes();
+            const hr = now.getHours() % 12;
+
+            const secAngle = sec * 6; // 360/60
+            const minAngle = min * 6 + sec * 0.1;
+            const hrAngle = hr * 30 + min * 0.5;
+
+            document.getElementById('second').style.transform = `rotate(${secAngle}deg)`;
+            document.getElementById('minute').style.transform = `rotate(${minAngle}deg)`;
+            document.getElementById('hour').style.transform = `rotate(${hrAngle}deg)`;
+        }
+
+        function renderCalendar() {
+            const container = document.getElementById('calendar-container');
+            container.innerHTML = '';
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            const headers = ['日', '一', '二', '三', '四', '五', '六'];
+            headers.forEach(h => {
+                const div = document.createElement('div');
+                div.textContent = h;
+                div.classList.add('header');
+                container.appendChild(div);
+            });
+
+            for (let i = 0; i < firstDay; i++) {
+                const empty = document.createElement('div');
+                container.appendChild(empty);
+            }
+
+            const today = now.getDate();
+            for (let d = 1; d <= daysInMonth; d++) {
+                const div = document.createElement('div');
+                div.textContent = d;
+                if (d === today) {
+                    div.classList.add('today');
+                }
+                container.appendChild(div);
+            }
+        }
+
+        function generateNumbers() {
+            const clock = document.getElementById('clock');
+            const radius = 90; // distance from center to numbers
+            for (let n = 1; n <= 12; n++) {
+                const el = document.createElement('div');
+                el.classList.add('number');
+                el.textContent = n;
+                const angle = (n / 12) * 360;
+                const rad = angle * Math.PI / 180;
+                const x = radius * Math.sin(rad);
+                const y = -radius * Math.cos(rad);
+                el.style.left = `calc(50% + ${x}px)`;
+                el.style.top = `calc(50% + ${y}px)`;
+                clock.appendChild(el);
+            }
+        }
+
+        // update every 50ms to give the appearance of continuous motion
+        setInterval(updateClock, 50);
+        updateClock();
+        generateNumbers();
+        renderCalendar();
+    </script>
+</body>
+</html>
